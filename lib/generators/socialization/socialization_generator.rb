@@ -11,7 +11,7 @@ class SocializationGenerator < Rails::Generators::Base
   class_option :store, :type => :string, :default => 'active_record', :description => "Type of datastore"
 
   def self.next_migration_number(dirname)
-    if ActiveRecord::Base.try(:timestamped_migrations) || ActiveRecord.timestamped_migrations
+    if ActiveRecord::Base.try(:timestamped_migrations) || timestamped_migrations?
       Time.now.utc.strftime("%Y%m%d%H%M%S")
     else
       "%.3d" % (current_migration_number(dirname) + 1)
@@ -35,6 +35,14 @@ class SocializationGenerator < Rails::Generators::Base
       migration_template "#{options[:store]}/migration_likes.rb",    'db/migrate/create_likes.rb'
       sleep 1 # wait a second to have a unique migration timestamp
       migration_template "#{options[:store]}/migration_mentions.rb", 'db/migrate/create_mentions.rb'
+    end
+  end
+
+  def self.timestamped_migrations?
+    if Rails::VERSION::MAJOR >= 7
+      ActiveRecord.timestamped_migrations
+    else
+      ActiveRecord::Base.timestamped_migrations
     end
   end
 end
